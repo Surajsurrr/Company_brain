@@ -1,43 +1,55 @@
-/* Design System & Visual Tokens for AI-Company Brain */
-:root {
-  --bg-primary: #07090e;
-  --bg-secondary: #0d121d;
-  --bg-card: rgba(16, 23, 38, 0.82);
-  --bg-card-hover: rgba(23, 33, 54, 0.9);
-  --bg-card-active: rgba(30, 43, 71, 0.95);
-  
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-highlight: rgba(99, 102, 241, 0.35);
-  --border-glow: rgba(6, 182, 212, 0.4);
+/* ==========================================================================
+   ATLAS ENTERPRISE BRAIN - DESIGN SYSTEM
+   Inspired by Linear, Notion AI & Superhuman
+   Tactile, refined dark slate aesthetic with human-centric typography
+   ========================================================================== */
 
+:root {
+  /* Carbon Slate & Surface Colors */
+  --bg-app: #080a0f;
+  --bg-sidebar: #0b0e15;
+  --bg-card: #111520;
+  --bg-card-subtle: rgba(17, 21, 32, 0.6);
+  --bg-card-hover: #161c2b;
+  --bg-card-active: #1c2336;
+  --bg-input: #0f131d;
+
+  /* Refined Borders */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-medium: rgba(255, 255, 255, 0.1);
+  --border-focus: rgba(99, 102, 241, 0.45);
+  --border-highlight: rgba(129, 140, 248, 0.3);
+
+  /* Typography Colors */
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
+  --text-faint: #475569;
 
-  --accent-primary: #6366f1;
-  --accent-primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
-  --accent-cyan: #06b6d4;
-  --accent-cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+  /* Brand & Status Accents */
+  --brand-primary: #6366f1;
+  --brand-gradient: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%);
+  --brand-subtle: rgba(99, 102, 241, 0.12);
+  --brand-border: rgba(99, 102, 241, 0.28);
+  
   --accent-emerald: #10b981;
   --accent-amber: #f59e0b;
   --accent-rose: #f43f5e;
+  --accent-cyan: #06b6d4;
 
-  /* Entity Type Colors */
-  --color-carrier: #3b82f6;
-  --color-invoice: #ec4899;
-  --color-contract: #8b5cf6;
-  --color-incident: #ef4444;
-  --color-email: #f59e0b;
-  --color-shipment: #10b981;
-  --color-route: #06b6d4;
-
-  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.08);
-  --shadow-glow: 0 0 25px -5px rgba(99, 102, 241, 0.3);
-  --shadow-cyan-glow: 0 0 25px -5px rgba(6, 182, 212, 0.3);
-
-  --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', var(--font-sans);
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Subtle Shadows & Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.45), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+  --shadow-elevated: 0 16px 36px -8px rgba(0, 0, 0, 0.65), 0 0 1px 1px rgba(255, 255, 255, 0.08);
 }
 
 * {
@@ -47,114 +59,135 @@
 }
 
 body {
-  background-color: var(--bg-primary);
+  background-color: var(--bg-app);
   color: var(--text-primary);
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-  min-height: 100vh;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
   line-height: 1.5;
-  background-image: 
-    radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.07) 0%, transparent 35%),
-    radial-gradient(circle at 50% 85%, rgba(236, 72, 153, 0.05) 0%, transparent 45%);
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+  font-weight: 700;
 }
 
 button {
-  font-family: var(--font-heading);
+  font-family: var(--font-sans);
   cursor: pointer;
   border: none;
   outline: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  color: inherit;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-input, textarea, select {
-  font-family: var(--font-body);
+input, textarea {
+  font-family: var(--font-sans);
   outline: none;
 }
 
-/* Scrollbars */
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.22);
 }
 
-/* Glassmorphism Utilities */
-.glass-panel {
+/* Linear-style Card Surfaces */
+.linear-card {
   background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-subtle);
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease;
 }
 
-.glass-panel-glow {
+.linear-card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.linear-card-interactive {
   background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--border-highlight);
-  box-shadow: var(--shadow-card), var(--shadow-glow);
-  border-radius: 14px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.18s ease;
 }
 
-/* Badge styles */
-.badge {
+.linear-card-interactive:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-highlight);
+  transform: translateY(-1px);
+}
+
+/* Badges & Tags */
+.meta-tag {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  font-size: 0.73rem;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
 }
-.badge-carrier { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
-.badge-invoice { background: rgba(236, 72, 153, 0.15); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); }
-.badge-contract { background: rgba(139, 92, 246, 0.15); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3); }
-.badge-incident { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-.badge-email { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-.badge-shipment { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-.badge-route { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
 
-/* Animation keyframes */
+.meta-tag-blue {
+  background: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.meta-tag-emerald {
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.meta-tag-purple {
+  background: rgba(139, 92, 246, 0.1);
+  color: #a78bfa;
+  border-color: rgba(139, 92, 246, 0.25);
+}
+
+.meta-tag-amber {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+/* Micro Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 @keyframes pulseGlow {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.04); }
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
-@keyframes floatGentle {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-4px); }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.animate-pulse-glow {
-  animation: pulseGlow 3s infinite ease-in-out;
-}
-
-.animate-shimmer {
-  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+.pulse-indicator {
+  animation: pulseGlow 1.8s infinite ease-in-out;
 }
