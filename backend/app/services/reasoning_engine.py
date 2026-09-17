@@ -5,6 +5,7 @@ from app.models.schemas import (
 )
 from app.services.graph_service import graph_service
 from app.services.vector_service import vector_service
+from app.services.preset_manager import preset_manager
 
 class MultiHopReasoningEngine:
     """
@@ -13,18 +14,26 @@ class MultiHopReasoningEngine:
     - HR & People (PTO, Parental Leave, 401k, Wellness Stipend)
     - Finance & Procurement (Approval Limits, Travel, Per Diem, Expenses)
     - Operations & Logistics (Carrier Contracts, Fuel Surcharges, Invoices, Delivery Delays)
+    - Dynamic B2B SaaS & Omnichannel Retail Profiles
     """
 
     def process_query(self, req: QueryRequest) -> QueryResponse:
         q = req.query.strip().lower()
         cleaned_words = [w.strip("?!.,;:'\"") for w in q.split()]
+        company = preset_manager.get_active_profile()
 
         # 0. Conversational greetings & assistant identity
         if any(w in cleaned_words for w in ["hi", "hello", "hey", "hola", "greetings", "howdy"]) or \
            q in ["who are you", "who are you?", "what can you do", "what can you do?", "what is this", "what is this?", "help", "help me"]:
             return self._answer_greeting(req)
 
-        # 1. HR Policies
+        # Check if active preset is CloudScale SaaS or Omniverse Retail
+        if company.id == "cloudscale_saas":
+            return self._analyze_saas_query(req)
+        elif company.id == "omniverse_retail":
+            return self._analyze_retail_query(req)
+
+        # 1. HR Policies (Apex default)
         elif any(w in q for w in ["pto", "vacation", "carryover", "time off", "leave policy"]):
             return self._answer_pto_policy(req)
         elif any(w in q for w in ["parental", "maternity", "paternity", "baby", "birth", "adoption"]):
@@ -40,7 +49,7 @@ class MultiHopReasoningEngine:
         elif any(w in q for w in ["travel", "flight", "per diem", "meal", "hotel", "business class"]):
             return self._answer_travel_policy(req)
 
-        # 3. Operations & Supply Chain (Existing Deep Causal Reasoning)
+        # 3. Operations & Supply Chain (Deep Causal Reasoning)
         elif any(w in q for w in ["cost", "surge", "increase", "expense", "expensive", "spend", "freight cost"]):
             return self._analyze_cost_surge(req)
         elif any(w in q for w in ["delay", "otd", "on-time", "sla", "late", "breach", "penalty"]):
@@ -50,7 +59,7 @@ class MultiHopReasoningEngine:
         elif any(w in q for w in ["reroute", "capacity", "swift", "allentown", "alternative"]):
             return self._analyze_capacity_and_routing(req)
 
-        # 4. General Company Brain Synthesizer
+        # 4. General Dynamic GraphRAG Synthesizer
         else:
             return self._general_company_query(req)
 
@@ -449,6 +458,162 @@ class MultiHopReasoningEngine:
             highlighted_subgraph=GraphData(nodes=[], edges=[]),
             reasoning_steps=[ReasoningStep(step_num=1, title="Conversational Greeting", detail="Initialized interactive session with user.", entities_discovered=[])],
             financial_metrics={}
+        )
+
+    def _analyze_saas_query(self, req: QueryRequest) -> QueryResponse:
+        q = req.query.lower()
+        evidence = vector_service.search_evidence(req.query, top_k=3)
+        highlighted_nodes = ["cust_finserve", "srv_telemetry", "inc_sev1_latency", "contract_finserve_sla"]
+        subgraph = graph_service.get_subgraph(highlighted_nodes, include_neighbors=True)
+
+        summary = (
+            "CloudScale is experiencing severe latency on its Telemetry Ingestion cluster (14M events/sec), "
+            "triggering a 145-minute outage (INC-802) that breaches Tier-1 SLA for FinServe ($1.4M ARR) and incurs a $75,000 penalty. "
+            "Concurrently, Snowflake data lake compute overrun is running at +34.5% ($36,200/mo over budget)."
+        )
+
+        detailed = (
+            "### Enterprise Operational Diagnostic: CloudScale Systems\n\n"
+            "**1. Telemetry Ingestion & Sev-1 SLA Failure:**\n"
+            "- Broker 4 on the Kafka partition cluster ran out of memory under high-throughput event spikes from MegaCorp.\n"
+            "- FinServe Global's SLA guarantees **99.95% continuous availability** (`MSA-2025-FIN §4.2`). The 145-minute degradation triggered a 10% monthly rebate credit ($11,666 immediate credit memo and $75,000 annual contractual exposure).\n\n"
+            "**2. Snowflake Cloud Compute Variance:**\n"
+            "- Q3 Snowflake warehouse credit burn exceeded contracted budget by **$36,200** (+34.5%).\n"
+            "- Root cause: Unindexed telemetry analytics queries and absence of automated 60-second auto-suspend timers."
+        )
+
+        causal_factors = [
+            CausalFactor(
+                factor="Kafka Partition Exhaustion under MegaCorp 14M events/sec traffic surge",
+                attribution_percentage=55.0,
+                financial_impact=75000.0,
+                description="Buffer overflow throttled ingestion pipeline for 145 mins, breaching Tier-1 SLA.",
+                evidence_ids=["doc_saas_inc802", "doc_saas_sla"],
+                affected_entity_ids=["srv_telemetry", "inc_sev1_latency"]
+            ),
+            CausalFactor(
+                factor="Unpartitioned Snowflake Data Lake Queries & Missing Auto-Suspend Gating",
+                attribution_percentage=45.0,
+                financial_impact=36200.0,
+                description="Ad-hoc telemetry analysis queries executed across entire warehouse without partition keys.",
+                evidence_ids=["doc_finops_audit"],
+                affected_entity_ids=["srv_snowflake", "team_finops"]
+            )
+        ]
+
+        recommendations = [
+            RecommendationItem(
+                id="rec_saas_1",
+                title="Kafka Partition Autoscaling & Dynamic Customer Rate-Limiting",
+                priority="CRITICAL",
+                action_type="UPDATE_SOP",
+                estimated_savings=75000.0,
+                description="Double Kafka partition brokers from 6 to 12 and enforce rate-limiting per customer tenant.",
+                steps=["Scale broker pods to 12", "Implement per-tenant token bucket rate-limiting", "Issue FinServe credit memo"]
+            ),
+            RecommendationItem(
+                id="rec_saas_2",
+                title="Snowflake FinOps Auto-Suspend & Cluster Key Enforcement",
+                priority="HIGH",
+                action_type="CLAUSE_MODIFICATION",
+                estimated_savings=36200.0,
+                description="Enforce 60-second auto-suspend on 2X-Large warehouses and cluster on customer_org_id.",
+                steps=["Set AUTO_SUSPEND = 60", "Add CLUSTER BY (customer_org_id, event_date)", "Configure credit spike alerts"]
+            )
+        ]
+
+        return QueryResponse(
+            query=req.query,
+            executive_summary=summary,
+            detailed_answer=detailed,
+            causal_factors=causal_factors,
+            recommendations=recommendations,
+            evidence_trail=evidence,
+            highlighted_subgraph=subgraph,
+            reasoning_steps=[
+                ReasoningStep(step_num=1, title="Customer & Infrastructure Mapping", detail="Linked FinServe Global account to Telemetry Kafka Cluster and Snowflake lakehouse.", entities_discovered=["cust_finserve", "srv_telemetry"]),
+                ReasoningStep(step_num=2, title="Incident & SLA Correlation", detail="Identified INC-802 buffer overflow breaching MSA-2025-FIN 99.95% uptime clause.", entities_discovered=["inc_sev1_latency", "contract_finserve_sla"]),
+                ReasoningStep(step_num=3, title="FinOps Analysis", detail="Calculated $36,200/mo unbudgeted Snowflake compute overage.", entities_discovered=["srv_snowflake"])
+            ],
+            financial_metrics={"total_financial_exposure": 111200.0, "arr_at_risk": 1400000.0}
+        )
+
+    def _analyze_retail_query(self, req: QueryRequest) -> QueryResponse:
+        q = req.query.lower()
+        evidence = vector_service.search_evidence(req.query, top_k=3)
+        highlighted_nodes = ["supp_pacifex", "po_8841", "sku_outerwear", "chan_ecommerce", "pol_returns_60d"]
+        subgraph = graph_service.get_subgraph(highlighted_nodes, include_neighbors=True)
+
+        summary = (
+            "Omniverse Brands faces two severe operational margin drains: (1) A 18-day port customs hold on PO-8841 "
+            "risks a $1.1M Black Friday stockout of flagship Nordic Parkas (SKU-491); (2) A 24.8% D2C returns rate driven by sizing disparities "
+            "and an unmanaged 60-day return policy costs $720,000 annually in reverse logistics."
+        )
+
+        detailed = (
+            "### Enterprise Operational Diagnostic: Omniverse Brands\n\n"
+            "**1. Sourcing Delay & High-Margin Inventory Stockout Risk:**\n"
+            "- Ocean shipment for 35,000 units of SKU-491 (`PO-8841`) from Pacifex Textiles is stalled at Long Beach Port due to documentation errors.\n"
+            "- Chicago fulfillment center has only 12 days of buffer inventory, risking a complete stockout across 28 Midwest flagship stores.\n\n"
+            "**2. Reverse Logistics & Returns Margin Leakage:**\n"
+            "- E-commerce return rates are running at **24.8%**, with sizing discrepancies driving 64% of claims.\n"
+            "- Legacy 60-day unconditional return policy creates an annual reverse logistics loss of **$720,000** ($18.40 processing cost per unit)."
+        )
+
+        causal_factors = [
+            CausalFactor(
+                factor="Long Beach Port Customs Hold on PO-8841 (Pacifex Textiles)",
+                attribution_percentage=60.0,
+                financial_impact=1100000.0,
+                description="Ocean container delayed 18 days past delivery window under contracted supply agreement.",
+                evidence_ids=["doc_retail_po8841"],
+                affected_entity_ids=["supp_pacifex", "po_8841", "sku_outerwear"]
+            ),
+            CausalFactor(
+                factor="D2C Sizing Disparity & 60-Day Return Policy Reverse Logistics Drain",
+                attribution_percentage=40.0,
+                financial_impact=720000.0,
+                description="Return processing costs running at $18.40 per unit with 64% attributed to sizing mismatch.",
+                evidence_ids=["doc_returns_analysis"],
+                affected_entity_ids=["chan_ecommerce", "pol_returns_60d"]
+            )
+        ]
+
+        recommendations = [
+            RecommendationItem(
+                id="rec_ret_1",
+                title="Expedited Port Customs Clearance & Partial Air-Freight",
+                priority="CRITICAL",
+                action_type="UPDATE_SOP",
+                estimated_savings=1100000.0,
+                description="Air-freight 4,000 units to Chicago distribution hub and enforce 1.5% weekly delay penalty on Pacifex.",
+                steps=["Engage expedited customs broker", "Air-ship 4,000 units to Chicago hub", "Invoke Contract Clause §7 delay damages"]
+            ),
+            RecommendationItem(
+                id="rec_ret_2",
+                title="Shorten Return Window to 30 Days & Implement 3D Fit Guide",
+                priority="HIGH",
+                action_type="CLAUSE_MODIFICATION",
+                estimated_savings=280000.0,
+                description="Modernize return policy from 60 to 30 days and embed sizing recommendation widget to drop return rates by 40%.",
+                steps=["Update e-commerce return policy", "Deploy interactive fit assistant", "Incentivize in-store retail drop-off"]
+            )
+        ]
+
+        return QueryResponse(
+            query=req.query,
+            executive_summary=summary,
+            detailed_answer=detailed,
+            causal_factors=causal_factors,
+            recommendations=recommendations,
+            evidence_trail=evidence,
+            highlighted_subgraph=subgraph,
+            reasoning_steps=[
+                ReasoningStep(step_num=1, title="Supply Chain Bottleneck Trace", detail="Traced PO-8841 shipment delay from Pacifex Textiles to Long Beach port customs hold.", entities_discovered=["supp_pacifex", "po_8841"]),
+                ReasoningStep(step_num=2, title="Inventory Buffer Analysis", detail="Identified critical stockout window (12 days buffer) for Nordic Parkas SKU-491.", entities_discovered=["sku_outerwear", "wh_chicago"]),
+                ReasoningStep(step_num=3, title="Margin & Reverse Logistics Calculation", detail="Audited 24.8% return rate costing $720,000 annually under legacy policy.", entities_discovered=["pol_returns_60d"])
+            ],
+            financial_metrics={"total_financial_exposure": 1820000.0, "annual_leakage": 720000.0}
         )
 
     def _general_company_query(self, req: QueryRequest) -> QueryResponse:

@@ -172,9 +172,9 @@ export const GraphViewer: React.FC<GraphViewerProps> = ({
           ctx.strokeStyle = '#6366f1';
           ctx.lineWidth = 3.2;
           ctx.shadowColor = '#6366f1';
-          ctx.shadowBlur = 12;
+          ctx.shadowBlur = 8;
         } else {
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+          ctx.strokeStyle = 'rgba(0, 0, 0, 0.12)';
           ctx.lineWidth = 1.2;
           ctx.shadowBlur = 0;
         }
@@ -186,7 +186,7 @@ export const GraphViewer: React.FC<GraphViewerProps> = ({
           const midX = (source.x + target.x) / 2;
           const midY = (source.y + target.y) / 2;
           ctx.font = '10px "Inter", sans-serif';
-          ctx.fillStyle = isHighlighted ? '#a5b4fc' : '#64748b';
+          ctx.fillStyle = isHighlighted ? '#4338ca' : '#64748b';
           ctx.textAlign = 'center';
           ctx.fillText(edge.relation, midX, midY - 4);
         }
@@ -206,7 +206,7 @@ export const GraphViewer: React.FC<GraphViewerProps> = ({
         if (isHighlighted || isSelected || isHovered) {
           ctx.beginPath();
           ctx.arc(node.x, node.y, node.radius + 10, 0, Math.PI * 2);
-          ctx.fillStyle = isSelected ? 'rgba(6, 182, 212, 0.25)' : 'rgba(99, 102, 241, 0.25)';
+          ctx.fillStyle = isSelected ? 'rgba(37, 99, 235, 0.2)' : 'rgba(124, 58, 237, 0.18)';
           ctx.fill();
         }
 
@@ -215,13 +215,13 @@ export const GraphViewer: React.FC<GraphViewerProps> = ({
         ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
         ctx.fillStyle = node.color;
         ctx.fill();
-        ctx.lineWidth = isSelected ? 3 : 1.5;
-        ctx.strokeStyle = isSelected ? '#38bdf8' : '#ffffff';
+        ctx.lineWidth = isSelected ? 3 : 2;
+        ctx.strokeStyle = isSelected ? '#2563eb' : '#ffffff';
         ctx.stroke();
 
         // Node Label
-        ctx.font = `600 ${node.type === 'carrier' ? 12 : 11}px "Plus Jakarta Sans", sans-serif`;
-        ctx.fillStyle = isHighlighted || isSelected ? '#ffffff' : '#cbd5e1';
+        ctx.font = `700 ${node.type === 'carrier' ? 12 : 11}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = isHighlighted || isSelected ? '#0f172a' : '#1e293b';
         ctx.textAlign = 'center';
         ctx.fillText(node.label, node.x, node.y + node.radius + 15);
 
@@ -339,7 +339,7 @@ export const GraphViewer: React.FC<GraphViewerProps> = ({
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '560px', overflow: 'hidden', background: '#090d16' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '560px', overflow: 'hidden', background: '#fcfbfe' }}>
       {/* Top Controls & Category Filters */}
       <div style={{
         position: 'absolute',
@@ -356,10 +356,11 @@ export const GraphViewer: React.FC<GraphViewerProps> = ({
         <div style={{
           display: 'flex',
           gap: '6px',
-          background: 'rgba(15, 23, 42, 0.85)',
+          background: 'rgba(255, 255, 255, 0.94)',
           padding: '6px',
-          borderRadius: '12px',
-          border: '1px solid var(--border-subtle)',
+          borderRadius: '14px',
+          border: '1px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
           backdropFilter: 'blur(12px)',
           pointerEvents: 'auto',
           flexWrap: 'wrap'
@@ -369,15 +370,16 @@ export const GraphViewer: React.FC<GraphViewerProps> = ({
               key={type}
               onClick={() => setActiveFilter(type)}
               style={{
-                padding: '4px 10px',
+                padding: '5px 12px',
                 borderRadius: '8px',
-                fontSize: '0.74rem',
+                fontSize: '0.76rem',
                 fontWeight: 600,
                 textTransform: 'capitalize',
-                background: activeFilter === type ? (TYPE_COLORS[type] || 'var(--accent-primary)') : 'transparent',
-                color: activeFilter === type ? '#fff' : 'var(--text-secondary)',
-                border: '1px solid',
-                borderColor: activeFilter === type ? 'transparent' : 'rgba(255,255,255,0.05)'
+                background: activeFilter === type ? '#0f172a' : 'transparent',
+                color: activeFilter === type ? '#ffffff' : '#475569',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
               }}
             >
               {type === 'all' ? 'All Entities' : type + 's'}
@@ -388,30 +390,31 @@ export const GraphViewer: React.FC<GraphViewerProps> = ({
         {/* View Zoom & Center Controls */}
         <div style={{
           display: 'flex',
-          gap: '6px',
-          background: 'rgba(15, 23, 42, 0.85)',
+          gap: '4px',
+          background: 'rgba(255, 255, 255, 0.94)',
           padding: '4px',
-          borderRadius: '10px',
-          border: '1px solid var(--border-subtle)',
+          borderRadius: '12px',
+          border: '1px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
           pointerEvents: 'auto'
         }}>
           <button
             onClick={() => setTransform(t => ({ ...t, k: Math.min(2.8, t.k * 1.2) }))}
-            style={{ padding: '6px 8px', borderRadius: '6px', background: 'transparent', color: '#fff' }}
+            style={{ padding: '6px 10px', borderRadius: '8px', background: 'transparent', color: '#334155', border: 'none', cursor: 'pointer' }}
             title="Zoom In"
           >
             <ZoomIn size={16} />
           </button>
           <button
             onClick={() => setTransform(t => ({ ...t, k: Math.max(0.4, t.k * 0.8) }))}
-            style={{ padding: '6px 8px', borderRadius: '6px', background: 'transparent', color: '#fff' }}
+            style={{ padding: '6px 10px', borderRadius: '8px', background: 'transparent', color: '#334155', border: 'none', cursor: 'pointer' }}
             title="Zoom Out"
           >
             <ZoomOut size={16} />
           </button>
           <button
             onClick={() => setTransform({ x: 0, y: 0, k: 1.0 })}
-            style={{ padding: '6px 8px', borderRadius: '6px', background: 'transparent', color: '#fff' }}
+            style={{ padding: '6px 10px', borderRadius: '8px', background: 'transparent', color: '#334155', border: 'none', cursor: 'pointer' }}
             title="Reset View"
           >
             <RotateCcw size={16} />
@@ -436,12 +439,11 @@ export const GraphViewer: React.FC<GraphViewerProps> = ({
           bottom: 20,
           left: 20,
           maxWidth: '340px',
-          background: 'rgba(15, 23, 42, 0.94)',
-          backdropFilter: 'blur(16px)',
-          border: `1px solid ${hoveredNode.color}`,
-          borderRadius: '12px',
-          padding: '12px 16px',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.7)',
+          background: '#ffffff',
+          borderRadius: '14px',
+          border: `1px solid rgba(0, 0, 0, 0.08)`,
+          padding: '14px 18px',
+          boxShadow: '0 12px 32px rgba(0, 0, 0, 0.08)',
           pointerEvents: 'none',
           zIndex: 20
         }}>
@@ -457,10 +459,10 @@ export const GraphViewer: React.FC<GraphViewerProps> = ({
               {hoveredNode.type}
             </span>
           </div>
-          <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>
+          <div style={{ fontSize: '0.94rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>
             {hoveredNode.label}
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+          <div style={{ fontSize: '0.82rem', color: '#475569', lineHeight: 1.45 }}>
             {hoveredNode.summary || 'Operational node in Company Knowledge Graph.'}
           </div>
         </div>

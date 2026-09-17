@@ -1,26 +1,36 @@
 import React from 'react';
-import { BrainCircuit, Database, ShieldAlert, Sparkles, PlusCircle } from 'lucide-react';
+import { BrainCircuit, Database, ShieldAlert, Sparkles, PlusCircle, Briefcase } from 'lucide-react';
+import { CompanyProfile } from '../types';
 
 interface HeaderProps {
   stats: any;
   onOpenIngest: () => void;
-  activeTab: 'graph' | 'causal' | 'evidence';
-  setActiveTab: (tab: 'graph' | 'causal' | 'evidence') => void;
+  activeTab: 'graph' | 'causal' | 'evidence' | 'consultancy';
+  setActiveTab: (tab: 'graph' | 'causal' | 'evidence' | 'consultancy') => void;
+  currentProfile: CompanyProfile | null;
 }
 
-export const Header: React.FC<HeaderProps> = ({ stats, onOpenIngest, activeTab, setActiveTab }) => {
+export const Header: React.FC<HeaderProps> = ({
+  stats,
+  onOpenIngest,
+  activeTab,
+  setActiveTab,
+  currentProfile
+}) => {
   return (
     <header style={{
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '16px 28px',
+      padding: '14px 28px',
       borderBottom: '1px solid var(--border-subtle)',
-      background: 'rgba(7, 9, 14, 0.88)',
+      background: 'rgba(7, 9, 14, 0.92)',
       backdropFilter: 'blur(20px)',
       position: 'sticky',
       top: 0,
-      zIndex: 40
+      zIndex: 40,
+      flexWrap: 'wrap',
+      gap: '12px'
     }}>
       {/* Brand & Identity */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -50,11 +60,11 @@ export const Header: React.FC<HeaderProps> = ({ stats, onOpenIngest, activeTab, 
               color: '#a5b4fc',
               border: '1px solid rgba(99, 102, 241, 0.4)'
             }}>
-              ENTERPRISE RELATIONAL AI
+              OPERATIONAL INTELLIGENCE & CONSULTANCY
             </span>
           </div>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-            Logistics & Supply Chain Operational Intelligence Layer
+            {currentProfile ? currentProfile.tagline : "Enterprise GraphRAG & Strategic Advisory Engine"}
           </p>
         </div>
       </div>
@@ -72,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({ stats, onOpenIngest, activeTab, 
         <button
           onClick={() => setActiveTab('graph')}
           style={{
-            padding: '7px 16px',
+            padding: '7px 14px',
             borderRadius: '7px',
             fontSize: '0.84rem',
             fontWeight: 600,
@@ -88,9 +98,28 @@ export const Header: React.FC<HeaderProps> = ({ stats, onOpenIngest, activeTab, 
         </button>
 
         <button
+          onClick={() => setActiveTab('consultancy')}
+          style={{
+            padding: '7px 14px',
+            borderRadius: '7px',
+            fontSize: '0.84rem',
+            fontWeight: 700,
+            background: activeTab === 'consultancy' ? 'linear-gradient(135deg, #2563eb, #7c3aed)' : 'transparent',
+            color: activeTab === 'consultancy' ? '#fff' : '#60a5fa',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            border: activeTab === 'consultancy' ? '1px solid rgba(255,255,255,0.2)' : '1px solid transparent'
+          }}
+        >
+          <Briefcase size={15} />
+          Strategic Advisory & Business Plan
+        </button>
+
+        <button
           onClick={() => setActiveTab('causal')}
           style={{
-            padding: '7px 16px',
+            padding: '7px 14px',
             borderRadius: '7px',
             fontSize: '0.84rem',
             fontWeight: 600,
@@ -102,13 +131,13 @@ export const Header: React.FC<HeaderProps> = ({ stats, onOpenIngest, activeTab, 
           }}
         >
           <Sparkles size={15} />
-          Causal Attribution & Actions
+          Causal Attribution
         </button>
 
         <button
           onClick={() => setActiveTab('evidence')}
           style={{
-            padding: '7px 16px',
+            padding: '7px 14px',
             borderRadius: '7px',
             fontSize: '0.84rem',
             fontWeight: 600,
@@ -124,27 +153,8 @@ export const Header: React.FC<HeaderProps> = ({ stats, onOpenIngest, activeTab, 
         </button>
       </div>
 
-      {/* Stats & Ingest CTA */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-        {stats && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-            fontSize: '0.78rem',
-            color: 'var(--text-muted)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-emerald)', display: 'inline-block' }} />
-              <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{stats.total_nodes || 18}</span> Nodes
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-cyan)', display: 'inline-block' }} />
-              <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{stats.total_edges || 24}</span> Relational Edges
-            </div>
-          </div>
-        )}
-
+      {/* Actions: Ingest CTA */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         <button
           onClick={onOpenIngest}
           style={{
@@ -157,11 +167,12 @@ export const Header: React.FC<HeaderProps> = ({ stats, onOpenIngest, activeTab, 
             borderRadius: '9px',
             fontSize: '0.84rem',
             fontWeight: 600,
-            boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)'
+            boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)',
+            cursor: 'pointer'
           }}
         >
           <PlusCircle size={16} />
-          + Ingest Document
+          + Ingest Data
         </button>
       </div>
     </header>

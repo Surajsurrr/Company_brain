@@ -235,4 +235,7 @@ class GraphService:
                 ))
         return results
 
+    def get_all_nodes(self) -> List[EntityNode]:
+        return self.get_full_graph().nodes
+
 graph_service = GraphService()
