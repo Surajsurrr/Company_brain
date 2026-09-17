@@ -16,10 +16,16 @@ class MultiHopReasoningEngine:
     """
 
     def process_query(self, req: QueryRequest) -> QueryResponse:
-        q = req.query.lower()
+        q = req.query.strip().lower()
+        cleaned_words = [w.strip("?!.,;:'\"") for w in q.split()]
+
+        # 0. Conversational greetings & assistant identity
+        if any(w in cleaned_words for w in ["hi", "hello", "hey", "hola", "greetings", "howdy"]) or \
+           q in ["who are you", "who are you?", "what can you do", "what can you do?", "what is this", "what is this?", "help", "help me"]:
+            return self._answer_greeting(req)
 
         # 1. HR Policies
-        if any(w in q for w in ["pto", "vacation", "carryover", "time off", "leave policy"]):
+        elif any(w in q for w in ["pto", "vacation", "carryover", "time off", "leave policy"]):
             return self._answer_pto_policy(req)
         elif any(w in q for w in ["parental", "maternity", "paternity", "baby", "birth", "adoption"]):
             return self._answer_parental_leave(req)
@@ -422,21 +428,63 @@ class MultiHopReasoningEngine:
             financial_metrics={"available_capacity": "15 Vans Weekly", "projected_savings_per_load": "$950.00"}
         )
 
+    def _answer_greeting(self, req: QueryRequest) -> QueryResponse:
+        summary = "I am your Company Brain AI assistant — here to provide instant, verified answers across company policies, finances, operations, and logistics."
+        detailed = (
+            "### Hello! I am Company Brain AI 👋\n\n"
+            "I connect your company's operational records, official policies, contracts, emails, and financial guidelines into an interactive intelligence layer.\n\n"
+            "**Here are key areas you can ask me about:**\n"
+            "- **People & HR Policies**: Vacation & PTO accrual, parental leave, wellness stipends, 401(k) matching, health benefits.\n"
+            "- **Finance & Expenses**: Manager signing authority thresholds, corporate card rules, travel and per diem policies.\n"
+            "- **Logistics & Operations**: Carrier contracts, freight cost surges, invoice audits, SLA penalties, route bottlenecks, and capacity availability.\n\n"
+            "Feel free to ask any question in plain English, and I will search our enterprise records and cite the exact policies!"
+        )
+        return QueryResponse(
+            query=req.query,
+            executive_summary=summary,
+            detailed_answer=detailed,
+            causal_factors=[],
+            recommendations=[],
+            evidence_trail=[],
+            highlighted_subgraph=GraphData(nodes=[], edges=[]),
+            reasoning_steps=[ReasoningStep(step_num=1, title="Conversational Greeting", detail="Initialized interactive session with user.", entities_discovered=[])],
+            financial_metrics={}
+        )
+
     def _general_company_query(self, req: QueryRequest) -> QueryResponse:
         evidence = vector_service.search_evidence(req.query, top_k=3)
         matched_entities = graph_service.search_entities(req.query)
-        entity_ids = [e.id for e in matched_entities[:3]] or ["pol_pto_carryover", "pol_expense_approvals"]
-        subgraph = graph_service.get_subgraph(entity_ids, include_neighbors=False)
+        entity_ids = [e.id for e in matched_entities[:3]]
+        subgraph = graph_service.get_subgraph(entity_ids, include_neighbors=False) if entity_ids else GraphData(nodes=[], edges=[])
 
-        sources_str = ", ".join([e.title for e in evidence]) if evidence else "Company Policies & Enterprise Records"
+        if evidence:
+            summary = f"Identified {len(evidence)} verified company source(s) addressing '{req.query}'."
+            evidence_blocks = []
+            for e in evidence:
+                evidence_blocks.append(f"**{e.title}** ({e.source_ref}):\n> {e.snippet}\n")
 
-        summary = f"Synthesized information regarding '{req.query}' from {len(evidence)} verified company sources."
-        detailed = (
-            f"### Company Brain Knowledge Response\n\n"
-            f"Based on our internal policy repositories and operational databases:\n\n"
-            + "\n\n".join([f"- **{e.title}** ({e.source_ref}): {e.snippet}" for e in evidence])
-            + "\n\n*If you need specific policy exceptions or deeper operational drilldowns, please specify your department or reference number.*"
-        )
+            detailed = (
+                f"### Knowledge Synthesis: {req.query}\n\n"
+                f"Based on internal documents and verified company records:\n\n"
+                + "\n".join(evidence_blocks)
+                + "\n*If you need specific policy exceptions, manager approvals, or contractual escalation, please ask for more details.*"
+            )
+            steps = [
+                ReasoningStep(step_num=1, title="Knowledge Retrieval", detail=f"Indexed and retrieved {len(evidence)} source documents matching '{req.query}'.", entities_discovered=entity_ids)
+            ]
+        else:
+            summary = f"Synthesized enterprise context for '{req.query}'."
+            detailed = (
+                f"### Inquiry: {req.query}\n\n"
+                f"I reviewed internal knowledge bases, but didn't find a direct document mentioning this exact phrase. Here is what is covered in our enterprise repository:\n\n"
+                f"1. **HR & People**: For leave, benefits, or workplace accommodations, refer to the official Employee Handbook (`HR-POL-401` through `410`) or contact the People team.\n"
+                f"2. **Finance & Procurement**: Direct managers can approve up to $1,000, Directors up to $10,000, and VPs up to $25,000 under `FIN-AUTH-2026`.\n"
+                f"3. **Logistics & Carriers**: Master agreements and SLA penalties for freight carriers (Apex, Swift, Nordic) and active shipping routes.\n\n"
+                f"Feel free to rephrase or ask about any specific policy, carrier, or expense rule!"
+            )
+            steps = [
+                ReasoningStep(step_num=1, title="Contextual Review", detail=f"Cross-referenced query against internal repositories.", entities_discovered=[])
+            ]
 
         return QueryResponse(
             query=req.query,
@@ -446,7 +494,7 @@ class MultiHopReasoningEngine:
             recommendations=[],
             evidence_trail=evidence,
             highlighted_subgraph=subgraph,
-            reasoning_steps=[ReasoningStep(step_num=1, title="Knowledge Search", detail=f"Queried enterprise knowledge index for '{req.query}'.", entities_discovered=entity_ids)],
+            reasoning_steps=steps,
             financial_metrics={"sources_consulted": len(evidence)}
         )
 

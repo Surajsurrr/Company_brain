@@ -112,7 +112,7 @@ class VectorEvidenceService:
     def search_evidence(self, query: str, top_k: int = 5) -> List[EvidenceItem]:
         query_tokens = set(self._tokenize(query))
         if not query_tokens:
-            return list(self.documents.values())[:top_k]
+            return []
 
         scored_results = []
         for doc in self.documents.values():
