@@ -2,18 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Send, Sparkles, User, ShieldCheck, Copy, Check,
   ThumbsUp, ThumbsDown, Plus, FileText, X, ArrowRight,
-  Database, Briefcase, ShieldAlert, MessageSquare, PlusCircle
+  Briefcase, ShieldAlert, MessageSquare, PlusCircle
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import {
-  executeQuery, fetchCompanyProfile, fetchKnowledgeGraph,
+  executeQuery, fetchCompanyProfile,
   fetchEvidenceItem, fetchEvidenceList
 } from './services/api';
 import {
-  QueryResponse, EvidenceItem, CompanyProfile, GraphData, EntityNode
+  QueryResponse, EvidenceItem, CompanyProfile
 } from './types';
 import { ConsultancyView } from './components/ConsultancyView';
-import { GraphViewer } from './components/GraphViewer';
 import { EvidenceExplorer } from './components/EvidenceExplorer';
 import { IngestionModal } from './components/IngestionModal';
 
@@ -33,10 +32,9 @@ export function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedEvidence, setSelectedEvidence] = useState<EvidenceItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'chat' | 'consultancy' | 'graph' | 'evidence'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'consultancy' | 'evidence'>('chat');
   
   const [currentProfile, setCurrentProfile] = useState<CompanyProfile | null>(null);
-  const [graphData, setGraphData] = useState<GraphData>({ nodes: [], edges: [] });
   const [evidenceList, setEvidenceList] = useState<EvidenceItem[]>([]);
   const [isIngestOpen, setIsIngestOpen] = useState<boolean>(false);
 
@@ -53,13 +51,11 @@ export function App() {
 
   const loadInitialData = async () => {
     try {
-      const [profile, graph, evidence] = await Promise.all([
+      const [profile, evidence] = await Promise.all([
         fetchCompanyProfile().catch(() => null),
-        fetchKnowledgeGraph().catch(() => ({ nodes: [], edges: [] })),
         fetchEvidenceList().catch(() => [])
       ]);
       if (profile) setCurrentProfile(profile);
-      if (graph) setGraphData(graph);
       if (evidence) setEvidenceList(evidence);
     } catch (err) {
       console.error("Failed to load initial data:", err);
@@ -75,18 +71,6 @@ export function App() {
     setMessages([]);
     setInputVal('');
     setTimeout(() => inputRef.current?.focus(), 100);
-  };
-
-  const handlePresetSwitched = async (newProfile: CompanyProfile) => {
-    setCurrentProfile(newProfile);
-    setMessages([]);
-    try {
-      const updatedGraph = await fetchKnowledgeGraph();
-      setGraphData(updatedGraph);
-      showToast(`Switched operational model to ${newProfile.name}`);
-    } catch (err) {
-      console.error("Failed to refresh graph after switch:", err);
-    }
   };
 
   const handleSendMessage = async (customPrompt?: string) => {
@@ -312,27 +296,6 @@ export function App() {
             Strategic Advisory & Business Plan
           </button>
 
-          <button
-            onClick={() => setActiveTab('graph')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '7px 14px',
-              borderRadius: '8px',
-              fontSize: '0.82rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              border: 'none',
-              background: activeTab === 'graph' ? '#ffffff' : 'transparent',
-              color: activeTab === 'graph' ? '#0f172a' : '#64748b',
-              boxShadow: activeTab === 'graph' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <Database size={15} />
-            Knowledge Graph
-          </button>
 
           <button
             onClick={() => setActiveTab('evidence')}
@@ -415,15 +378,6 @@ export function App() {
         </main>
       )}
 
-      {/* VIEW 2: INTERACTIVE KNOWLEDGE GRAPH */}
-      {activeTab === 'graph' && (
-        <main style={{ flex: 1, height: 'calc(100vh - 65px)', background: 'var(--folio-bg)' }}>
-          <GraphViewer
-            graphData={graphData}
-            onSelectNode={(node) => showToast(`Selected node: ${node.label}`)}
-          />
-        </main>
-      )}
 
       {/* VIEW 3: EVIDENCE EXPLORER */}
       {activeTab === 'evidence' && (
@@ -951,10 +905,10 @@ export function App() {
           setIsIngestOpen(false);
           showToast(`Ingested & linked ${resp.extracted_edges?.length || 0} relational edges!`);
           try {
-            const updatedGraph = await fetchKnowledgeGraph();
-            setGraphData(updatedGraph);
+            const updatedEvidence = await fetchEvidenceList();
+            setEvidenceList(updatedEvidence);
           } catch (err) {
-            console.error("Failed to refresh graph after ingestion:", err);
+            console.error("Failed to refresh evidence after ingestion:", err);
           }
         }}
       />
